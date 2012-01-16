@@ -6,7 +6,9 @@ class TwoSpin {
   private val pp = 1.0 - p;
   private val rnd = new Random();
   private val ss = new ArrayBuffer[ArrayBuffer[Double]];
-  private var temp = 1.01
+  private val temp = 1.01
+  private val ensembles = new ArrayBuffer[ArrayBuffer[Double]];
+  private val pas = new ArrayBuffer[Double];
 
   (0 until 2).foreach {
     (s) => {
@@ -29,7 +31,7 @@ class TwoSpin {
 
   def p(de: Double, temp: Double): Double = return Math.exp(-de/temp);
 
-  def calcEnsembleAverage(ss :ArrayBuffer[ArrayBuffer[Double]]) :ArrayBuffer[Double] = {
+  def calcEnsemble(ss :ArrayBuffer[ArrayBuffer[Double]]) :ArrayBuffer[Double] = {
     val result = new ArrayBuffer[Double];
     (0 until 4).foreach { (i) => result += 0 };
     (0 until N).foreach {
@@ -43,13 +45,30 @@ class TwoSpin {
     return result;
   }
 
+  def calcEnsembleAverage(): ArrayBuffer[Double] = {
+    val averages = new ArrayBuffer[Double];
+    ensembles.foreach {
+      (ensemble) => {
+        val average = e(1, 1) * ensemble(0) + e(1, -1) * ensemble(1) + e(-1, 1) * ensemble(2) + e(-1, -1) * ensemble(3);
+        averages += average;
+      }
+    }
+    return averages;
+  }
+
+  def calcLongTimeAverage(): ArrayBuffer[Double] = {
+    return pas;
+  }
+
   def run(max: Int): Unit = {
     (0 until max).foreach {
       (t) => {
+        var esSum = 0.0;
         (0 until N).foreach {
           (n) => {
             val s = (Math.floor(rnd.nextDouble() * 2)).asInstanceOf[Int];
             val es = e(ss(0)(n), ss(1)(n));
+            esSum += es;
             var esd = 0.0;
             if (s == 0) {
               esd = e(ss(0)(n) * -1, ss(1)(n));
@@ -63,8 +82,10 @@ class TwoSpin {
             }
           }
         }
-        val ensemble = calcEnsembleAverage(ss);
-        println(t + " " + ensemble.mkString(" "));
+        val ensemble = calcEnsemble(ss);
+        ensembles += ensemble
+        val pa = 1/temp * esSum * 1/N;
+        pas += pa;
       }
     }
   }
@@ -73,6 +94,12 @@ class TwoSpin {
 object TwoSpinSimulator extends Application {
   val ts = new TwoSpin
   ts.run(500)
+  var index = 0;
+  val ensembles = ts.calcEnsembleAverage();
+  val lt = ts.calcLongTimeAverage();
+  (0 until ensembles.length).foreach {
+    (index) => println(index + " " + ensembles(index) + " " + lt(index));
+  }
 }
 
 TwoSpinSimulator main null
