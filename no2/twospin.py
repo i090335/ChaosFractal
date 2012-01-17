@@ -10,10 +10,10 @@ class TwoSpin(object):
     J = 1.0
     h1 = 0.5
     h2 = 0.1
-    T = 1.01
 
-    def __init__(self, tmax):
+    def __init__(self, tmax, temp=1.0):
         self.tmax = tmax
+        self.temp = float(temp)
         self._matrix = [[random.choice((-1, 1)) for y in xrange(self.L[1])] for x in xrange(self.L[0])]
 
     def e(self, s1, s2):
@@ -50,8 +50,10 @@ class TwoSpin(object):
             esd = self.e(m1, m2 * -1)
         de = esd - es
         r = random.random()
-        if de < 0 or r < self._p(de, self.T):
+        if de < 0 or r < self._p(de, self.temp):
+            print "before", self._matrix[ps[s][0]][ps[s][1]]
             self._matrix[ps[s][0]][ps[s][1]] *= -1
+            print "after", self._matrix[ps[s][0]][ps[s][1]]
 
     def _get_neighbor(self, p):
         x, y = p
@@ -62,6 +64,6 @@ class TwoSpin(object):
         return self._matrix[x][y]
 
 if __name__ == '__main__':
-    twospin = TwoSpin(100)
+    twospin = TwoSpin(1000, 1.5)
     twospin.run()
     twospin.show_image()
